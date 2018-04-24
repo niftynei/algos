@@ -2,17 +2,47 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
 
 	"github.com/niftynei/algos/sort"
 )
 
+type sortFunc func([]int) []int
+
+func generateRandom(length int) []int {
+	result := make([]int, length)
+
+	for index, _ := range result {
+		result[index] = rand.Intn(length)
+	}
+
+	return result
+}
+
 func main() {
-	unsorted := []int{9, 5, 2, 4, 7, 8, 1, 6, -2}
+	/* ~/go/src/github.com/niftynei/algos $ go run proj.go
+	   Sorting 500000 numbers
 
-	fmt.Printf("Unsorted array: %v\n\n", unsorted)
+	   Heap took 156.757316ms
+	   Insertion took 1m44.827435316s
+	   Merge took 447.51028ms
+	   Quick took 1m37.8403218s
+	   Selection took 5m27.989212623s
+	*/
 
-	fmt.Println(sort.Selection(unsorted))
-	fmt.Println(sort.Insertion(unsorted))
-	fmt.Println(sort.Heap(unsorted))
-	fmt.Println(sort.Quick(unsorted))
+	numToSort := 500000
+	unsorted := generateRandom(numToSort)
+	fmt.Printf("Sorting %d numbers\n\n", numToSort)
+
+	sortTypes := []sortFunc{
+		sort.Heap,
+		sort.Insertion,
+		sort.Merge,
+		sort.Quick,
+		sort.Selection,
+	}
+
+	for _, sortType := range sortTypes {
+		sortType(unsorted)
+	}
 }
