@@ -1,9 +1,7 @@
 package sort
 
-/*
 import (
 	"time"
-
 	"github.com/niftynei/algos/timing"
 )
 
@@ -46,28 +44,39 @@ func (Q *queue) isEmpty() bool {
 	return Q.head == nil
 }
 
-func mergesort(array []int, low, high int) {
-	if low < high {
-		middle := (low + high) / 2
-		mergesort(array, low, middle)
-		mergesort(array, middle+1, high)
-		merge(array, low, middle, high)
+func mergesort(array []int, c chan []int) {
+	if len(array) == 1 {
+		c <- array
+		return
 	}
+
+	leftChan := make(chan []int)
+	rightChan := make(chan []int)
+	middle := len(array) / 2
+	go mergesort(array[:middle], leftChan)
+	go mergesort(array[middle:], rightChan)
+
+	ldata := <-leftChan
+	rdata := <-rightChan
+
+	close(leftChan)
+	close(rightChan)
+	c <- merge(ldata, rdata)
 }
 
-func merge(array []int, low, middle, high int) {
+func merge(left []int, right []int) ([]int) {
+	array := make([]int, len(left) + len(right))
 	buffer1 := &queue{}
 	buffer2 := &queue{}
 
-	for i := low; i <= middle; i++ {
-		buffer1.enqueue(array[i])
+	for _, item := range left {
+		buffer1.enqueue(item)
+	}
+	for _, item := range right {
+		buffer2.enqueue(item)
 	}
 
-	for i := middle + 1; i <= high; i++ {
-		buffer2.enqueue(array[i])
-	}
-
-	counter := low
+	counter := 0
 	for !(buffer1.isEmpty() || buffer2.isEmpty()) {
 		if buffer1.head.value <= buffer2.head.value {
 			array[counter] = buffer1.dequeue()
@@ -85,12 +94,20 @@ func merge(array []int, low, middle, high int) {
 		array[counter] = buffer2.dequeue()
 		counter += 1
 	}
-}
-
-func notMerge(array []int) []int {
-	defer timing.Timer(time.Now(), "Merge")
-
-	mergesort(array, 0, len(array)-1)
 	return array
 }
-*/
+
+func Merge(array []int) []int {
+	defer timing.Timer(time.Now(), "Merge")
+
+	result := make(chan []int)
+	go mergesort(array, result)
+
+	r := <-result
+	response := make([]int, len(array))
+	for _, v := range r {
+		response = append(response, v)
+	}
+	close(result)
+	return response
+}
