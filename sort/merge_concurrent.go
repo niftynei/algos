@@ -1,50 +1,11 @@
 package sort
 
 import (
-	"time"
 	"github.com/niftynei/algos/timing"
+	"time"
 )
 
-type queue struct {
-	head *queueNode
-	tail *queueNode
-}
-
-type queueNode struct {
-	value int
-	child *queueNode
-}
-
-func (Q *queue) dequeue() int {
-	result := Q.head.value
-
-	if Q.head == Q.tail {
-		Q.head, Q.tail = nil, nil
-		return result
-	}
-	Q.head = Q.head.child
-
-	return result
-}
-
-func (Q *queue) enqueue(value int) {
-	newQueueNode := &queueNode{value: value}
-
-	if Q.head == nil {
-		Q.head = newQueueNode
-	}
-
-	if Q.tail != nil {
-		Q.tail.child = newQueueNode
-	}
-	Q.tail = newQueueNode
-}
-
-func (Q *queue) isEmpty() bool {
-	return Q.head == nil
-}
-
-func mergesort(array []int, c chan []int) {
+func mergesortWithConcurrency(array []int, c chan []int) {
 	if len(array) == 1 {
 		c <- array
 		return
@@ -53,19 +14,19 @@ func mergesort(array []int, c chan []int) {
 	leftChan := make(chan []int)
 	rightChan := make(chan []int)
 	middle := len(array) / 2
-	go mergesort(array[:middle], leftChan)
-	go mergesort(array[middle:], rightChan)
+	go mergesortWithConcurrency(array[:middle], leftChan)
+	go mergesortWithConcurrency(array[middle:], rightChan)
 
 	ldata := <-leftChan
 	rdata := <-rightChan
 
 	close(leftChan)
 	close(rightChan)
-	c <- merge(ldata, rdata)
+	c <- mergeWithConcurrency(ldata, rdata)
 }
 
-func merge(left []int, right []int) ([]int) {
-	array := make([]int, len(left) + len(right))
+func mergeWithConcurrency(left []int, right []int) []int {
+	array := make([]int, len(left)+len(right))
 	buffer1 := &queue{}
 	buffer2 := &queue{}
 
@@ -97,11 +58,11 @@ func merge(left []int, right []int) ([]int) {
 	return array
 }
 
-func Merge(array []int) []int {
-	defer timing.Timer(time.Now(), "Merge")
+func MergeWithConcurrency(array []int) []int {
+	defer timing.Timer(time.Now(), "Concurrent Merge")
 
 	result := make(chan []int)
-	go mergesort(array, result)
+	go mergesortWithConcurrency(array, result)
 
 	r := <-result
 	response := make([]int, len(array))

@@ -1,6 +1,5 @@
 package sort
 
-/*
 import (
 	"time"
 
@@ -87,10 +86,9 @@ func merge(array []int, low, middle, high int) {
 	}
 }
 
-func notMerge(array []int) []int {
+func Merge(array []int) []int {
 	defer timing.Timer(time.Now(), "Merge")
 
 	mergesort(array, 0, len(array)-1)
 	return array
 }
-*/

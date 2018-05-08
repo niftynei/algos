@@ -30,16 +30,17 @@ func main() {
 	   Selection took 5m27.989212623s
 	*/
 
-	numToSort := 10000000
+	numToSort := 1000
 	unsorted := generateRandom(numToSort)
 	fmt.Printf("Sorting %d numbers\n\n", numToSort)
 
 	sortTypes := []sortFunc{
-//		sort.Heap,
-//		sort.Insertion,
+		sort.Heap,
+		sort.Insertion,
 		sort.Merge,
-//		sort.Quick,
-//		sort.Selection,
+		sort.MergeWithConcurrency,
+		sort.Quick,
+		sort.Selection,
 	}
 
 	for _, sortType := range sortTypes {
