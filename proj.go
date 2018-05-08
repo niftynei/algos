@@ -46,4 +46,7 @@ func main() {
 	for _, sortType := range sortTypes {
 		sortType(unsorted)
 	}
+
+	bigFileName := "/Users/april.neal/go/src/github.com/niftynei/algos/bigFileONumbers.txt"
+	_ := sort.ExternalMerge(bigFileName)
 }
