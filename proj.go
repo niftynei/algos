@@ -47,6 +47,7 @@ func main() {
 		sortType(unsorted)
 	}
 
-	bigFileName := "/Users/april.neal/go/src/github.com/niftynei/algos/bigFileONumbers.txt"
-	_ := sort.ExternalMerge(bigFileName)
+	// todo: use working directory
+	bigFileName := "/Users/neigut/Development/go/src/github.com/niftynei/algos/bigFileONumbers.txt"
+	_ = sort.ExternalMerge(bigFileName, 1000)
 }
