@@ -1,14 +1,16 @@
 package sort
 
 import (
+	"bufio"
+	"encoding/binary"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"log"
 	"math"
 	"math/rand"
-	"io"
 	"os"
 	"time"
-	"io/ioutil"
 
 	"github.com/niftynei/algos/timing"
 )
@@ -48,54 +50,51 @@ func chunkFile(filename string, chunkSize int) string {
 	if err != nil {
 		panic(err)
 	}
-	
-	// While there's still stuff to read, output chunk bytes	
-	buffer := make([]byte, chunkSize)
+
+	// While there's still stuff to read, output chunk bytes
+	buffReader := bufio.NewReader(file)
+	chunk := make([]int, chunkSize)
+	bytesRead := 0
 	for {
-		bytesread, err := file.Read(buffer)
+		line, _, err := buffReader.ReadLine()
 		if err != nil {
 			if err == io.EOF {
-				break;
-			}	
+				break
+			}
 			panic(err)
 		}
-		chunk := sortChunk(buffer[:bytesread])
-		writeChunk(chunk, directoryName)
-	}		
-	
+		bytesRead += len(line)
+		if bytesRead > chunkSize {
+			writeChunk(sortChunk(chunk), directoryName)
+			chunk = make([]int, chunkSize)
+			bytesRead = 0
+		}
+		lineAsInt, _ := binary.Varint(line)
+		chunk = append(chunk, int(lineAsInt))
+	}
+
 	return directoryName
 }
 
-func sortChunk(chunk []byte) []byte {
-			
-	return sortedChunk
+func sortChunk(chunk []int) []int {
+	return Merge(chunk)
 }
 
-func chunkToIntArray(chunk []byte) []int {
-	ints := make([]int)	
-	newline := []byte("\n")
-	for bite, index := range chunk {
-		bites = make([]byte)
-		if bite == newline {
-				
-		}	
-	}
-	index := bytes.Index(chunk, newline)
-	if index == -1 {
-		// todo:
-		return nil
-	}
-	int(chunk[index+	
-}
-
-func writeChunk(chunk []byte, directory string) {
+func writeChunk(chunk []int, directory string) {
 	tmpFile, err := ioutil.TempFile(directory, "chunk_")
 	if err != nil {
 		panic(err)
 	}
-	if _, err := tmpFile.Write(chunk); err != nil {
+
+	lines := make([]byte, len(chunk)*64)
+	for _, eachInt := range chunk {
+		lines = append(lines, byte(eachInt)+byte('\n'))
+	}
+
+	if _, err := tmpFile.Write(lines); err != nil {
 		panic(err)
 	}
+
 	if err := tmpFile.Close(); err != nil {
 		panic(err)
 	}
@@ -117,9 +116,9 @@ func ExternalMerge(inputFilename string, numToSort int) (outputFilename string) 
 	if _, err := os.Stat(inputFilename); os.IsNotExist(err) {
 		generateBigFile(inputFilename, numToSort)
 	}
-	
+
 	chunkDir := chunkFile(inputFilename, 1024)
-	printFileNames(chunkDir)	
+	printFileNames(chunkDir)
 	fmt.Printf("directory is %s\n", chunkDir)
 	return chunkDir
 }
